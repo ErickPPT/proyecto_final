@@ -219,11 +219,8 @@ void obtenerClimaZona(int id, float* temperatura, float* viento, float* humedad)
         }
     }
 
-    printf("Ingrese la temperatura actual (°C): ");
     *temperatura=LeerNumeroFlotanteEntre("Ingrese la temperatura actual (°C): ", -50, 50);
-    printf("Ingrese la velocidad del viento actual (km/h): ");
     *viento = LeerNumeroFlotanteEntre("Ingrese la velocidad del viento actual (km/h): ", 0, 200);
-    printf("Ingrese el nivel de humedad actual (%%): ");
    *humedad = LeerNumeroFlotanteEntre("Ingrese el nivel de humedad actual (%%): ", 0, 100);
 
     int actualizado = 0;
