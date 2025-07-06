@@ -137,61 +137,70 @@ void GuardarPalabra(char *mensaje, char destino[], int longitud) {
 }
 
 void IngresarZona() {
-    FILE *datos = fopen(DATA, "r+"); // Abrir para leer y escribir
+    FILE *datos = fopen(DATA, "a+"); // Abrir o crear archivo, permite lectura y escritura al final
     if (datos == NULL) {
-        datos = fopen(DATA, "a+"); // Si no existe, lo crea
-        if (datos == NULL) {
-            printf("No se pudo abrir el archivo\n");
-            return;
-        }
+        printf("No se pudo abrir el archivo\n");
+        return;
     }
 
-    printf("\nIngreso de Zona\n");
+    printf("\n--- Ingreso de Zona ---\n");
     int idIngresado = LeerNumeroEnteroEntre("Ingrese el ID de la zona: ", 1, 9999);
-    int idEncontrado = 0;
-    char nombreTemporal[50], fechaTemporal[20];
     int idTemporal;
+    char nombreTemporal[50], fechaTemporal[20];
+    int zonaExistente = 0;
+    int datosHoyExistentes = 0;
 
+    // Obtener la fecha actual en formato yyyy-mm-dd
+    char fechaHoy[11];
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    snprintf(fechaHoy, sizeof(fechaHoy), "%04d-%02d-%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
+
+    // Buscar si ya existe la zona y si ya hay datos de hoy
     rewind(datos);
     while (fscanf(datos, "%d,%49[^,],%19[^,]", &idTemporal, nombreTemporal, fechaTemporal) == 3) {
         int c;
         while ((c = fgetc(datos)) != '\n' && c != EOF); // Saltar al final de la línea
-        if (idTemporal == idIngresado) {
-            strncpy(zona.nombre, nombreTemporal, 50);
-            zona.nombre[49] = '\0';
-            idEncontrado = 1;
-            break;
+
+            if (idTemporal == idIngresado) {
+                zonaExistente = 1;
+                strncpy(zona.nombre, nombreTemporal, 50);
+                zona.nombre[49] = '\0';
+
+            if (strcmp(fechaTemporal, fechaHoy) == 0) {
+                datosHoyExistentes = 1;
+                break;
+            }
         }
     }
 
     zona.id = idIngresado;
-    if (!idEncontrado) {
-        GuardarPalabra("Ingrese el nombre de la zona (max 50 caracteres): ", zona.nombre, 50);
-    } else {
-        printf("Nombre de zona detectado automaticamente: %s\n", zona.nombre);
+
+    if (datosHoyExistentes) {
+        printf("Ya se ingresaron los datos de hoy (%s) para esta zona.\n", fechaHoy);
+        fclose(datos);
+        return;
     }
 
-    // Obtener la fecha actual
-    char fecha[11];
-    time_t t = time(NULL);
-    struct tm tm = *localtime(&t);
-    snprintf(fecha, sizeof(fecha), "%04d-%02d-%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
+    if (!zonaExistente) {
+        GuardarPalabra("Ingrese el nombre de la zona (max 50 caracteres): ", zona.nombre, 50);
+    } else {
+        printf("Nombre de zona detectado automáticamente: %s\n", zona.nombre);
+    }
 
-    // Ir al final para agregar la nueva zona
-    fseek(datos, 0, SEEK_END);
-    printf("Ingrese los datos de contaminacion para la zona %s (ID: %d)\n", zona.nombre, zona.id);
+    // Agregar nuevos datos
+    printf("Ingrese los datos de contaminación para la zona %s (ID: %d)\n", zona.nombre, zona.id);
     contaminacion.co2 = LeerNumeroFlotanteEntre("Ingrese la cantidad de CO2: ", 0, 10000);
     contaminacion.so2 = LeerNumeroFlotanteEntre("Ingrese la cantidad de SO2: ", 0, 10000);
     contaminacion.no2 = LeerNumeroFlotanteEntre("Ingrese la cantidad de NO2: ", 0, 10000);
     contaminacion.pm25 = LeerNumeroFlotanteEntre("Ingrese la cantidad de PM2.5: ", 0, 10000);
 
     fprintf(datos, "%d,%s,%s,%.2f,%.2f,%.2f,%.2f\n",
-            zona.id, zona.nombre, fecha,
+            zona.id, zona.nombre, fechaHoy,
             contaminacion.co2, contaminacion.so2, contaminacion.no2, contaminacion.pm25);
 
-    printf("Zona ingresada correctamente. Fecha: %s\n", fecha);
+    printf("Zona ingresada correctamente. Fecha: %s\n", fechaHoy);
     fclose(datos);
-
 }
 
 void obtenerClimaZona(int id, float* temperatura, float* viento, float* humedad) {
