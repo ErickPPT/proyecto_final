@@ -287,12 +287,6 @@ void prediccion() {
         suma_pm25 += pm25[i];
     }
 
-    printf("\nDatos usados para la predicción (últimos %d días):\n", count);
-    for (int i = 0; i < count; i++) {
-        printf("%s: CO2=%.2f, SO2=%.2f, NO2=%.2f, PM25=%.2f\n",
-               fechas[i], co2[i], so2[i], no2[i], pm25[i]);
-    }
-
     // Calcular fecha de mañana
     time_t t_actual = time(NULL);
     struct tm tm_maniana = *localtime(&t_actual);
