@@ -206,7 +206,7 @@ void IngresarZona() {
 void obtenerClimaZona(int id, float* temperatura, float* viento, float* humedad) {
     for (int i = 0; i < total_climas; i++) {
         if (climas[i].id == id) {
-            char opcion;
+            int opcion;
             opcion=LeerNumeroEnteroEntre("Ingrese 1 para usar datos anteriores o 0 para ingresar nuevos datos: ", 0, 1);
             if (opcion == 1) {
                 *temperatura = climas[i].temperatura;
