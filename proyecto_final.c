@@ -55,7 +55,6 @@ int main() {
         printf("4. Generacion de recomendaciones\n");
         printf("5. Exportacion de datos\n");
         printf("6. Salir\n");
-        printf("Seleccione una opcion: ");
         opcion = LeerNumeroEnteroEntre("Ingrese una opcion (1-6): ", 1, 6);
         switch (opcion) {
             case 1:
