@@ -215,13 +215,10 @@ void obtenerClimaZona(int id, float* temperatura, float* viento, float* humedad)
             } else {
                 break;
             }
-        }
-    }
-
+        }}
     *temperatura=LeerNumeroFlotanteEntre("Ingrese la temperatura actual (°C): ", -50, 50);
     *viento = LeerNumeroFlotanteEntre("Ingrese la velocidad del viento actual (km/h): ", 0, 200);
    *humedad = LeerNumeroFlotanteEntre("Ingrese el nivel de humedad actual (%%): ", 0, 100);
-
     int actualizado = 0;
     for (int i = 0; i < total_climas; i++) {
         if (climas[i].id == id) {
@@ -231,8 +228,7 @@ void obtenerClimaZona(int id, float* temperatura, float* viento, float* humedad)
             climas[i].registrado = 1;
             actualizado = 1;
             break;
-        }
-    }
+        }}
     if (!actualizado) {
         climas[total_climas].id = id;
         climas[total_climas].temperatura = *temperatura;
@@ -240,8 +236,7 @@ void obtenerClimaZona(int id, float* temperatura, float* viento, float* humedad)
         climas[total_climas].humedad = *humedad;
         climas[total_climas].registrado = 1;
         total_climas++;
-    }
-}
+    }}
 
 void prediccion() {
     printf("\n--- Predicción de niveles futuros (promedio 7 días + clima actual) ---\n");
@@ -361,7 +356,6 @@ void recomendacionesPorZona() {
         printf("NO2: %.2f ug/m3\n", no2);
         printf("PM2.5: %.2f ug/m3\n", pm25);
 
-        printf("\nRecomendaciones\n");
         generacionRecomendaciones(co2, so2, no2, pm25);
     } else {
         printf("No se encontraron registros para la zona seleccionada.\n");
@@ -377,7 +371,7 @@ void promediosHistoricos() {
 
     int id_zona = LeerNumeroEnteroEntre("Ingrese el ID de la zona para calcular promedios históricos: ", 1, 10000);
 
-    int id;
+    int id, encontrado = 0;
     char nombre[50], fecha[20];
     float co2, so2, no2, pm25;
     float suma_co2 = 0, suma_so2 = 0, suma_no2 = 0, suma_pm25 = 0;
@@ -389,6 +383,8 @@ void promediosHistoricos() {
     while (fscanf(archivo, "%d,%49[^,],%19[^,],%f,%f,%f,%f",
                   &id, nombre, fecha, &co2, &so2, &no2, &pm25) == 7) {
         if (id == id_zona) {
+            encontrado = 1;
+
             int anio, mes, dia;
             if (sscanf(fecha, "%d-%d-%d", &anio, &mes, &dia) == 3) {
                 struct tm tm_registro = {0};
@@ -397,6 +393,7 @@ void promediosHistoricos() {
                 tm_registro.tm_mday = dia;
                 time_t t_registro = mktime(&tm_registro);
                 double diferencia_dias = difftime(t_actual, t_registro) / (60 * 60 * 24);
+
                 if (diferencia_dias >= 0 && diferencia_dias <= 30) {
                     suma_co2 += co2;
                     suma_so2 += so2;
@@ -410,12 +407,17 @@ void promediosHistoricos() {
 
     fclose(archivo);
 
-    if (contador == 0) {
-        printf("No hay datos suficientes de los últimos 30 días para esta zona.\n");
+    if (!encontrado) {
+        printf("La zona con ID %d no está registrada en el archivo.\n", id_zona);
         return;
     }
 
-    printf("\n--- Promedios históricos para zona ID %d (últimos %d días) ---\n", id_zona, contador);
+    if (contador == 0) {
+        printf("No hay datos dentro de los últimos 30 días para esta zona.\n");
+        return;
+    }
+
+    printf("\n--- Promedios históricos para zona ID %d (últimos 30 días disponibles) ---\n", id_zona);
     printf("CO2: %.2f ppm\n", suma_co2 / contador);
     printf("SO2: %.2f ug/m3\n", suma_so2 / contador);
     printf("NO2: %.2f ug/m3\n", suma_no2 / contador);
